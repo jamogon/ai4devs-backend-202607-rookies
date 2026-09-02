@@ -44,5 +44,6 @@ parece exigir un cambio de esquema, para y pregunta.
 - `jest.config.js` lleva `watchman: false` y no es decorativo: si watchman está
   instalado pero su daemon no responde, jest se cuelga minutos sin imprimir nada
   y muere con un `'error'` sin manejar de `fb-watchman`. No lo quites.
-- `swagger-jsdoc` y `swagger-ui-express` están en `package.json` desde el primer
-  commit y **no se importan en ningún sitio**: no hay documentación navegable.
+- Swagger UI (`/api-docs`) lee `api-spec.yaml` una sola vez al arrancar, y
+  `ts-node-dev` no vigila los `.yaml`. Si editas el contrato, **reinicia** o
+  seguirás viendo la documentación vieja.
