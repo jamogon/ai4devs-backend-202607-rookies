@@ -14,8 +14,9 @@ controllers pasan por los modelos, nunca por el cliente directamente.
 ## Reglas
 
 - TypeScript estricto. Nada de `any`, sobre todo en la capa de datos.
-- Errores tipados: clase base `AppError` con `statusCode` y subclases por caso.
-  Nunca `throw new Error()` ni relanzar un error capturado como tal.
+- Errores tipados: clase base `AppError` con `statusCode` y subclases por caso,
+  en `backend/src/application/errors/`. Nunca `throw new Error()` ni relanzar un
+  error capturado como tal.
 - Los controllers no llevan lógica de negocio: extraen, validan, llaman al
   service y responden.
 - Consultas con `select` anidado. Nunca un bucle con `await` dentro.
@@ -31,9 +32,18 @@ parece exigir un cambio de esquema, para y pregunta.
 
 ## Trampas de este repo
 
-- El seed del README falla. Usa:
-  `npx -y -p typescript@5.4 -p ts-node@10 ts-node --transpile-only prisma/seed.ts`
-- `npm test` sale en error: no hay ni un test. Un "no tests found" no es una
-  regresión tuya.
+- El seed del README falla (la ruta y el comando están mal). Usa `npm run seed`,
+  que encapsula el que sí funciona. **No es idempotente**: el seed usa `create` a
+  pelo y `Company.name`, `Candidate.email` y `Employee.email` son `@unique`, así
+  que un segundo `npm run seed` revienta con `P2002`.
 - La URL de conexión está escrita literal en `schema.prisma`; cambiar el `.env`
-  no basta.
+  no basta. La causa: `dotenv.config()` busca el `.env` en el cwd (`backend/`) y
+  el fichero está en la raíz del repo, así que hoy no lee nada.
+- Por lo mismo, el puerto se pasa con `PORT` desde el script de npm, no por
+  `.env`. Sin `PORT`, el 3010.
+- `jest.config.js` lleva `watchman: false` y no es decorativo: si watchman está
+  instalado pero su daemon no responde, jest se cuelga minutos sin imprimir nada
+  y muere con un `'error'` sin manejar de `fb-watchman`. No lo quites.
+- Swagger UI (`/api-docs`) lee `api-spec.yaml` una sola vez al arrancar, y
+  `ts-node-dev` no vigila los `.yaml`. Si editas el contrato, **reinicia** o
+  seguirás viendo la documentación vieja.

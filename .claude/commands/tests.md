@@ -26,8 +26,16 @@ por riesgo, no por cobertura:
 
 ## Ojo con la configuración
 
-Este repo no tiene ningún test todavía. `tsconfig.json` no excluye los `.test.ts`
-y `jest.config.js` no tiene `roots`, así que tras un build jest los contaría dos
-veces. Si vas a añadir el primero, **avísame** antes de tocar la configuración.
+La configuración ya está en orden y tiene tres piezas que **no debes quitar**:
+
+- `roots: ['<rootDir>/src']` en `jest.config.js`, para que jest no rastree todo
+  el proyecto ni cuente cada test dos veces tras un `npm run build`.
+- `watchman: false` en `jest.config.js`, sin lo cual jest se cuelga varios
+  minutos si el daemon de watchman no responde.
+- `exclude` de `**/*.test.ts` en `tsconfig.json`, para que los tests no acaben
+  compilados en `dist/`.
+
+Hoy hay un solo fichero de test: `src/application/errors/AppError.test.ts`. Si
+para lo que te pido necesitas cambiar la configuración, **avísame antes**.
 
 Qué quiero probar: $ARGUMENTS
