@@ -1,5 +1,5 @@
 ---
-description: Analiza el repo y explica cómo está montado, qué convenciones sigue y qué no cuadra
+description: Analiza el repo y explica cómo está montado — el contexto del PROYECTO, no el de la tarea
 ---
 
 Analiza este proyecto y explícamelo como si acabara de entrar en el equipo hoy.
