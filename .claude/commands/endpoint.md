@@ -1,8 +1,10 @@
 ---
-description: Añade un endpoint respetando las capas del proyecto
+description: Implementa un endpoint respetando las capas y el contrato ya escrito
 ---
 
-Añade el endpoint que te pido, respetando la arquitectura de este repo.
+Implementa el endpoint **que ya está declarado en `backend/api-spec.yaml`**.
+
+El spec es el contrato: si algo no coincide, el que está mal es el código.
 
 **Enséñame el plan antes de tocar ningún fichero.**
 
@@ -15,9 +17,8 @@ Sigue este orden:
 3. El controller en `src/presentation/controllers/`: extrae el parámetro,
    valida el formato, llama al service, responde.
 4. La ruta en `src/routes/`, y móntala en `index.ts`.
-5. Actualiza `backend/api-spec.yaml` con el contrato.
 
-Status codes: `400` si el parámetro no es válido, `404` si el recurso no
-existe, `200` con el resultado (que puede venir vacío).
+Al terminar, **comprueba que la respuesta coincide campo por campo con el spec**.
+Si no coincide, dime cuál de los dos está mal antes de cambiar nada.
 
-El endpoint que quiero: $ARGUMENTS
+El endpoint: $ARGUMENTS
