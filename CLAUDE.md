@@ -36,6 +36,13 @@ parece exigir un cambio de esquema, para y pregunta.
   que encapsula el que sí funciona. **No es idempotente**: el seed usa `create` a
   pelo y `Company.name`, `Candidate.email` y `Employee.email` son `@unique`, así
   que un segundo `npm run seed` revienta con `P2002`.
+- El seed principal **no sirve para verificar medias**: ningún candidato tiene
+  más de una entrevista, así que un cálculo bien hecho y uno mal hecho dan el
+  mismo número. Para eso está `npm run seed:fixtures`
+  (`prisma/seed-edge-cases.ts`), que crea los casos límite —sin entrevistas, sin
+  puntuar, media exacta, media periódica, mezcla— y una posición vacía. Ese sí
+  es idempotente: borra sus propias posiciones antes de recrearlas, y al acabar
+  imprime los ids y el valor esperado de cada caso.
 - La URL de conexión está escrita literal en `schema.prisma`; cambiar el `.env`
   no basta. La causa: `dotenv.config()` busca el `.env` en el cwd (`backend/`) y
   el fichero está en la raíz del repo, así que hoy no lee nada.

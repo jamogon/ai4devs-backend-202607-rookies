@@ -11,6 +11,7 @@
         "prisma:init": "npx prisma init",
         "prisma:generate": "npx prisma generate",
         "seed": "npx -y -p typescript@5.4 -p ts-node@10 ts-node --transpile-only prisma/seed.ts",
+        "seed:fixtures": "npx -y -p typescript@5.4 -p ts-node@10 ts-node --transpile-only prisma/seed-edge-cases.ts",
         "start:prod": "npm run build && npm start"
     },
     "keywords": [],
