@@ -38,4 +38,24 @@ La configuración ya está en orden y tiene tres piezas que **no debes quitar**:
 Hoy hay un solo fichero de test: `src/application/errors/AppError.test.ts`. Si
 para lo que te pido necesitas cambiar la configuración, **avísame antes**.
 
+## Y al terminar: rompe el código
+
+Un test en verde no prueba nada. Un test que **sigue en verde con el código
+roto** es peor que no tenerlo, porque da calma falsa.
+
+Así que para cada test que escribas, o al menos para los que cubren lo más
+arriesgado:
+
+1. Rompe a propósito lo que ese test dice proteger — cambia el signo, quita la
+   línea, devuelve `0` en vez de `null`.
+2. Lanza `npm test` y **enséñame la salida donde falla**, con el `Expected` y el
+   `Received`.
+3. Deshaz el cambio y confirma que vuelve a pasar.
+
+Si al romper el código el test sigue pasando, el test está mal: no estaba
+comprobando lo que dice comprobar. Dímelo y arréglalo antes de darlo por bueno.
+
+Es la única forma de saber que un test sirve sin esperar a que llegue el bug de
+verdad.
+
 Qué quiero probar: $ARGUMENTS
