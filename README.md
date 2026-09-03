@@ -12,8 +12,8 @@ This project is a full-stack application with a React frontend and an Express ba
     - `domain/`: Domain models. **These are the only files that talk to Prisma.**
     - `presentation/`: Presentation layer (controllers).
     - `routes/`: Route definitions for the API.
-  - `api-spec.yaml`: The OpenAPI contract for the API. Nothing serves it as a web
-    page yet — read it as a file.
+  - `api-spec.yaml`: The OpenAPI contract. It is the source of truth for the API
+    and is served as interactive documentation at `/api-docs`.
   - `prisma/`: Prisma schema, migrations and the seed.
   - `tsconfig.json`: TypeScript configuration file.
 
@@ -79,9 +79,14 @@ cd frontend
 npm start
 ```
 
-The backend server runs at http://localhost:3010 and the frontend at
+The backend server runs at http://localhost:3010, the interactive API
+documentation at http://localhost:3010/api-docs, and the frontend at
 http://localhost:3000. The backend port is hardcoded in `backend/src/index.ts` —
 there is no environment variable for it.
+
+`/api-docs` reads `api-spec.yaml` once at startup, and `ts-node-dev` does not
+watch `.yaml` files. If you edit the contract, **restart the server** or you will
+keep seeing the old documentation.
 
 For a production build instead of the dev server, use `npm run build && npm start`.
 
@@ -195,8 +200,8 @@ Este proyecto es una aplicación full-stack con un frontend en React y un backen
       Prisma.**
     - `presentation/`: Capa de presentación (controllers).
     - `routes/`: Definiciones de rutas de la API.
-  - `api-spec.yaml`: El contrato OpenAPI de la API. Todavía no hay nada que lo
-    sirva como página web: se lee como fichero.
+  - `api-spec.yaml`: El contrato OpenAPI. Es la fuente de verdad de la API y se
+    sirve como documentación navegable en `/api-docs`.
   - `prisma/`: Esquema de Prisma, migraciones y el seed.
   - `tsconfig.json`: Archivo de configuración de TypeScript.
 
@@ -261,9 +266,14 @@ cd frontend
 npm start
 ```
 
-El backend corre en http://localhost:3010 y el frontend en
-http://localhost:3000. El puerto del backend está escrito a fuego en
-`backend/src/index.ts`: no hay variable de entorno para cambiarlo.
+El backend corre en http://localhost:3010, la documentación navegable de la API
+en http://localhost:3010/api-docs y el frontend en http://localhost:3000. El
+puerto del backend está escrito a fuego en `backend/src/index.ts`: no hay
+variable de entorno para cambiarlo.
+
+`/api-docs` lee `api-spec.yaml` una sola vez al arrancar, y `ts-node-dev` no
+vigila los `.yaml`. Si editas el contrato, **reinicia el servidor** o seguirás
+viendo la documentación vieja.
 
 Si quieres una build de producción en vez del servidor de desarrollo, usa
 `npm run build && npm start`.
