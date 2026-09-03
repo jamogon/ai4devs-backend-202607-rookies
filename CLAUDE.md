@@ -32,10 +32,9 @@ parece exigir un cambio de esquema, para y pregunta.
 
 ## Trampas de este repo
 
-- El seed del README falla (la ruta y el comando están mal). Usa `npm run seed`,
-  que encapsula el que sí funciona. **No es idempotente**: el seed usa `create` a
-  pelo y `Company.name`, `Candidate.email` y `Employee.email` son `@unique`, así
-  que un segundo `npm run seed` revienta con `P2002`.
+- `npm run seed` **no es idempotente**: usa `create` a pelo y `Company.name`,
+  `Candidate.email` y `Employee.email` son `@unique`, así que una segunda
+  ejecución revienta con `P2002`. Para volver a sembrar hay que vaciar antes.
 - El seed principal **no sirve para verificar medias**: ningún candidato tiene
   más de una entrevista, así que un cálculo bien hecho y uno mal hecho dan el
   mismo número. Para eso está `npm run seed:fixtures`

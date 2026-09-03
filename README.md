@@ -7,14 +7,18 @@ This project is a full-stack application with a React frontend and an Express ba
 - `backend/`: Contains the server-side code written in Node.js.
   - `src/`: Contains the source code for the backend.
     - `index.ts`: The entry point for the backend server.
-    - `application/`: Contains the application logic.
-    - `domain/`: Contains the business logic.
-    - `infrastructure/`: Contains code that communicates with the database.
-    - `presentation/`: Contains code related to the presentation layer (such as controllers).
-    - `routes/`: Contains the route definitions for the API.
-    - `tests/`: Contains test files.
-  - `prisma/`: Contains the Prisma schema file for ORM.
+    - `application/`: Application logic — services, request validation, and the
+      typed error classes under `application/errors/`.
+    - `domain/`: Domain models. **These are the only files that talk to Prisma.**
+    - `presentation/`: Presentation layer (controllers).
+    - `routes/`: Route definitions for the API.
+  - `api-spec.yaml`: The OpenAPI contract. It is the source of truth for the API
+    and is served as interactive documentation at `/api-docs`.
+  - `prisma/`: Prisma schema, migrations and seeds.
   - `tsconfig.json`: TypeScript configuration file.
+
+  Tests live next to the code they cover, as `*.test.ts` files — there is no
+  separate `tests/` directory. Run them with `npm test`.
 - `frontend/`: Contains the client-side code written in React."
   - `src/`: Contains the source code for the frontend.
   - `public/`: Contains static files such as the HTML file and images.
@@ -35,14 +39,18 @@ The frontend is a React application, and its main files are located in the src d
 
 The backend is an Express application written in TypeScript. The src directory contains the source code, divided into several subdirectories:
 
-- `application`: Contains the application logic.
-- `domain`: Contains the domain models.
-- `infrastructure`: Contains code related to the infrastructure.
-- `presentation`: Contains code related to the presentation layer.
-- `routes`: Contains the application routes.
-- `tests`: Contains the application tests.
+- `application`: Application logic, validation and typed errors.
+- `domain`: Domain models.
+- `presentation`: Presentation layer.
+- `routes`: Application routes.
 
-The `prisma` directory contains the Prisma schema.
+A request flows through the layers in this order:
+
+```
+routes/ → presentation/controllers/ → application/services/ → domain/models/
+```
+
+The `prisma` directory contains the Prisma schema, the migrations and the seeds.
 
 ## First steps
 
@@ -58,28 +66,28 @@ npm install
 cd ../backend
 npm install
 ```
-3. Build the backend server:
-```
-cd backend
-npm run build
-````
+3. Start the database — see the Docker section below. Nothing that reads or
+   writes data works without it.
 4. Start the backend server:
 ```
 cd backend
-npm start
+npm run dev
 ```
-5. In a new terminal window, build the frontend server:
-```
-cd frontend
-npm run build
-```
-6. Start the frontend server:
+5. In a new terminal window, start the frontend server:
 ```
 cd frontend
 npm start
 ```
 
-The backend server will be running at http://localhost:3010 and the frontend will be available at http://localhost:3000.
+The backend runs at http://localhost:3010, the interactive API documentation at
+http://localhost:3010/api-docs, and the frontend at http://localhost:3000.
+
+To run several copies of this project side by side, set `PORT` for the backend
+(`PORT=3011 npm run dev`). Note that it has to be passed on the command line:
+`dotenv` looks for `.env` in the current working directory (`backend/`) and the
+file lives in the repository root, so it is not read.
+
+For a production build instead of the dev server, use `npm run build && npm start`.
 
 ## Docker and PostgreSQL
 
@@ -97,12 +105,14 @@ This will start a PostgreSQL database in a Docker container. The -d flag runs th
 To access the PostgreSQL database, you can use any PostgreSQL client with the following connection details:
 
 - Host: localhost
-- Port: 5432
-- User: postgres
-- Password: password
-- Database: mydatabase
-  
-Please replace User, Password, and Database with the actual username, password, and database name specified in your .env file.
+- Port: 5435
+- User: LTIdbUser
+- Password: see `DB_PASSWORD` in the `.env` file at the repository root
+- Database: LTIdb
+
+These values come from `.env` at the repository root, which is also what
+`docker-compose.yml` reads. If you change them there, you must change the
+connection string in `backend/prisma/schema.prisma` too — see the note below.
 
 To stop the Docker container, run the following command:
 
@@ -111,17 +121,36 @@ docker-compose down
 ```
 To generate the database using Prisma, follow these steps:
 
-1. Make sure that the .env file in the root directory of the backend contains the DATABASE_URL variable with the correct connection string to your PostgreSQL database. If it doesn’t work, try replacing the full URL directly in schema.prisma, in the url variable.
+1. The connection string is written literally in
+   `backend/prisma/schema.prisma`, in the `url` variable — Prisma does **not**
+   read `DATABASE_URL` from `.env`. If you point the database somewhere else,
+   that is the line to change.
 
-2. Open a terminal and navigate to the backend directory where the schema.prisma and seed.ts files are located.
+2. Open a terminal in the `backend` directory.
 
-3. Run the following commands to generate the Prisma structure, apply migrations to your database, and populate it with sample data:
+3. Run the following commands to generate the Prisma client, apply the migrations
+   and populate the database with sample data:
 
 ```
 npx prisma generate
 npx prisma migrate dev
-ts-node seed.ts
+npm run seed
 ```
+
+`npm run seed` is **not idempotent**: it uses plain `create` calls and
+`Company.name`, `Candidate.email` and `Employee.email` are unique, so a second
+run fails with a `P2002` error. To reseed, empty the database first.
+
+There is a second seed for edge-case data:
+
+```
+npm run seed:fixtures
+```
+
+It creates applications covering the awkward cases — no interviews, interviews
+with no score, exact and repeating averages — plus a position with no
+applications. Unlike the main seed this one **is** idempotent: it deletes its own
+rows before recreating them, and prints the ids it created when it finishes.
 
 Once you have completed all the steps, you should be able to save new candidates, both via web and via API, view them in the database, and retrieve them using GET by ID.
 
@@ -168,14 +197,19 @@ Este proyecto es una aplicación full-stack con un frontend en React y un backen
 - `backend/`: Contiene el código del lado del servidor escrito en Node.js.
   - `src/`: Contiene el código fuente para el backend.
     - `index.ts`: El punto de entrada para el servidor backend.
-    - `application/`: Contiene la lógica de aplicación.
-    - `domain/`: Contiene la lógica de negocio.
-    - `infrastructure/`: Contiene código que se comunica con la base de datos.
-    - `presentation/`: Contiene código relacionado con la capa de presentación (como controladores).
-    - `routes/`: Contiene las definiciones de rutas para la API.
-    - `tests/`: Contiene archivos de prueba.
-  - `prisma/`: Contiene el archivo de esquema de Prisma para ORM.
+    - `application/`: Lógica de aplicación — services, validación y las clases
+      de error tipadas en `application/errors/`.
+    - `domain/`: Modelos de dominio. **Son los únicos ficheros que hablan con
+      Prisma.**
+    - `presentation/`: Capa de presentación (controllers).
+    - `routes/`: Definiciones de rutas de la API.
+  - `api-spec.yaml`: El contrato OpenAPI. Es la fuente de verdad de la API y se
+    sirve como documentación navegable en `/api-docs`.
+  - `prisma/`: Esquema de Prisma, migraciones y seeds.
   - `tsconfig.json`: Archivo de configuración de TypeScript.
+
+  Los tests viven junto al código que cubren, como ficheros `*.test.ts` — no hay
+  un directorio `tests/` aparte. Se lanzan con `npm test`.
 - `frontend/`: Contiene el código del lado del cliente escrito en React.
   - `src/`: Contiene el código fuente para el frontend.
   - `public/`: Contiene archivos estáticos como el archivo HTML e imágenes.
@@ -196,14 +230,18 @@ El frontend es una aplicación React y sus archivos principales están ubicados 
 
 El backend es una aplicación Express escrita en TypeScript. El directorio `src` contiene el código fuente, dividido en varios subdirectorios:
 
-- `application`: Contiene la lógica de aplicación.
-- `domain`: Contiene los modelos de dominio.
-- `infrastructure`: Contiene código relacionado con la infraestructura.
-- `presentation`: Contiene código relacionado con la capa de presentación.
-- `routes`: Contiene las rutas de la aplicación.
-- `tests`: Contiene las pruebas de la aplicación.
+- `application`: Lógica de aplicación, validación y errores tipados.
+- `domain`: Modelos de dominio.
+- `presentation`: Capa de presentación.
+- `routes`: Rutas de la aplicación.
 
-El directorio `prisma` contiene el esquema de Prisma.
+Una petición recorre las capas en este orden:
+
+```
+routes/ → presentation/controllers/ → application/services/ → domain/models/
+```
+
+El directorio `prisma` contiene el esquema, las migraciones y los seeds.
 
 ## Primeros Pasos
 
@@ -218,28 +256,29 @@ npm install
 cd ../backend
 npm install
 ```
-3. Construye el servidor backend:
-```
-cd backend
-npm run build
-````
+3. Levanta la base de datos — mira la sección de Docker más abajo. Sin ella no
+   funciona nada que lea o escriba datos.
 4. Inicia el servidor backend:
 ```
 cd backend
-npm start
+npm run dev
 ```
-5. En una nueva ventana de terminal, construye el servidor frontend:
-```
-cd frontend
-npm run build
-```
-6. Inicia el servidor frontend:
+5. En una nueva ventana de terminal, inicia el servidor frontend:
 ```
 cd frontend
 npm start
 ```
 
-El servidor backend estará corriendo en http://localhost:3010 y el frontend estará disponible en http://localhost:3000.
+El backend corre en http://localhost:3010, la documentación navegable de la API
+en http://localhost:3010/api-docs y el frontend en http://localhost:3000.
+
+Para levantar varias copias del proyecto a la vez, pasa `PORT` al backend
+(`PORT=3011 npm run dev`). Ojo: tiene que ir en la línea de comandos, porque
+`dotenv` busca el `.env` en el directorio actual (`backend/`) y el fichero está
+en la raíz del repositorio, así que no lo lee.
+
+Si quieres una build de producción en vez del servidor de desarrollo, usa
+`npm run build && npm start`.
 
 ## Docker y PostgreSQL
 
@@ -255,12 +294,14 @@ Esto iniciará una base de datos PostgreSQL en un contenedor Docker. La bandera 
 
 Para acceder a la base de datos PostgreSQL, puedes usar cualquier cliente PostgreSQL con los siguientes detalles de conexión:
  - Host: localhost
- - Port: 5432
- - User: postgres
- - Password: password
- - Database: mydatabase
+ - Port: 5435
+ - User: LTIdbUser
+ - Password: mira `DB_PASSWORD` en el `.env` de la raíz del repositorio
+ - Database: LTIdb
 
-Por favor, reemplaza User, Password y Database con el usuario, la contraseña y el nombre de la base de datos reales especificados en tu archivo .env.
+Estos valores salen del `.env` de la raíz del repositorio, que es también lo que
+lee `docker-compose.yml`. Si los cambias ahí, tienes que cambiar además la cadena
+de conexión de `backend/prisma/schema.prisma` — mira la nota de abajo.
 
 Para detener el contenedor Docker, ejecuta el siguiente comando:
 ```
@@ -269,16 +310,35 @@ docker-compose down
 
 Para generar la base de datos utilizando Prisma, sigue estos pasos:
 
-1. Asegúrate de que el archivo `.env` en el directorio raíz del backend contenga la variable `DATABASE_URL` con la cadena de conexión correcta a tu base de datos PostgreSQL. Si no te funciona, prueba a reemplazar la URL completa directamente en `schema.prisma`, en la variable `url`.
+1. La cadena de conexión está escrita literalmente en
+   `backend/prisma/schema.prisma`, en la variable `url` — Prisma **no** lee
+   `DATABASE_URL` del `.env`. Si apuntas la base de datos a otro sitio, esa es la
+   línea que hay que cambiar.
 
-2. Abre una terminal y navega al directorio del backend donde se encuentra el archivo `schema.prisma` y `seed.ts`.
+2. Abre una terminal en el directorio `backend`.
 
-3. Ejecuta los siguientes comandos para generar la estructura de prisma, las migraciones a tu base de datos y poblarla con datos de ejemplo:
+3. Ejecuta los siguientes comandos para generar el cliente de Prisma, aplicar las
+   migraciones y poblar la base de datos con datos de ejemplo:
 ```
 npx prisma generate
 npx prisma migrate dev
-ts-node seed.ts
+npm run seed
 ```
+
+`npm run seed` **no es idempotente**: usa `create` a pelo y `Company.name`,
+`Candidate.email` y `Employee.email` son únicos, así que una segunda ejecución
+falla con un error `P2002`. Para volver a sembrar, vacía antes la base de datos.
+
+Hay un segundo seed con datos de casos límite:
+
+```
+npm run seed:fixtures
+```
+
+Crea aplicaciones que cubren los casos incómodos —sin entrevistas, con
+entrevistas sin puntuar, medias exactas y periódicas— más una posición sin
+aplicaciones. A diferencia del principal, este **sí** es idempotente: borra sus
+propias filas antes de recrearlas, e imprime al terminar los ids que ha creado.
 
 Una vez has dado todos los pasos, deberías poder guardar nuevos candidatos, tanto via web, como via API, verlos en la base de datos y obtenerlos mediante GET por id.
 
