@@ -1,316 +1,223 @@
-# LTI - Talent Tracking System | EN
+# LTI · Contexto para agentes de código
 
-This project is a full-stack application with a React frontend and an Express backend using Prisma as an ORM. The frontend is started with Create React App, and the backend is written in TypeScript.
+Material de la sesión S9 de **AI4Devs Backend**. Un backend real —Express +
+TypeScript + Prisma + Postgres— sobre el que se monta, paso a paso, el contexto
+que necesita un agente de código para trabajar bien: `CLAUDE.md`, subagentes,
+slash commands y skills.
 
-## Explanation of Directories and Files
+El repositorio no es un ejemplo terminado. Es una **secuencia de estados**: cada
+rama es una foto del proyecto en un momento de la clase, y la gracia está en
+comparar unas con otras.
 
-- `backend/`: Contains the server-side code written in Node.js.
-  - `src/`: Contains the source code for the backend.
-    - `index.ts`: The entry point for the backend server.
-    - `application/`: Contains the application logic.
-    - `domain/`: Contains the business logic.
-    - `infrastructure/`: Contains code that communicates with the database.
-    - `presentation/`: Contains code related to the presentation layer (such as controllers).
-    - `routes/`: Contains the route definitions for the API.
-    - `tests/`: Contains test files.
-  - `prisma/`: Contains the Prisma schema file for ORM.
-  - `tsconfig.json`: TypeScript configuration file.
-- `frontend/`: Contains the client-side code written in React."
-  - `src/`: Contains the source code for the frontend.
-  - `public/`: Contains static files such as the HTML file and images.
-  - `build/`: Contains the production-ready build of the frontend.
-- `.env`: Contains the environment variables.
-- `docker-compose.yml`: Contains the Docker Compose configuration to manage your application's services.
-- `README.md`: This file contains information about the project and instructions on how to run it.
+> **Esta rama (`main`) es solo el mapa.** No empieces a trabajar aquí: el código
+> está en el estado de partida, sin Swagger, sin tests y sin nada de `.claude/`.
+> Ve a [`limpio`](#el-recorrido).
 
-## Project Structure
+---
 
-The project is divided into two main directories: `frontend` and `backend`.
+## De dónde viene esto
 
-### Frontend
+Es un clon de
+[`LIDR-academy/ai4devs-backend-202607-seniors`](https://github.com/LIDR-academy/ai4devs-backend-202607-seniors),
+el proyecto LTI de la academia, con capas añadidas encima para la sesión.
+Licencia MIT, la original, en [`LICENSE.md`](LICENSE.md).
 
-The frontend is a React application, and its main files are located in the src directory. The public directory contains static assets, and the build directory contains the production build of the application.
+Todo lo que hay en `.claude/`, en `CLAUDE.md`, en `tasks/` y en
+`backend/prisma/seed-edge-cases.ts` es material de la sesión. El resto es el
+proyecto de LIDR.
 
-### Backend
+---
 
-The backend is an Express application written in TypeScript. The src directory contains the source code, divided into several subdirectories:
+## El recorrido
 
-- `application`: Contains the application logic.
-- `domain`: Contains the domain models.
-- `infrastructure`: Contains code related to the infrastructure.
-- `presentation`: Contains code related to the presentation layer.
-- `routes`: Contains the application routes.
-- `tests`: Contains the application tests.
+Las ramas están pensadas para verse **en orden**. Cada una añade una capa sobre
+la anterior.
 
-The `prisma` directory contains the Prisma schema.
+| # | Rama | Qué tiene | Para qué la quieres |
+|---|---|---|---|
+| 0 | `antes` | El proyecto tal cual sale de la academia | Ver de dónde se parte |
+| 1 | `limpio` | + Swagger en `/api-docs`, jest configurado, `AppError` tipado, seed de fixtures | **Empieza aquí.** Es el punto de partida de la clase |
+| 2 | `preparado/contexto` | + `CLAUDE.md`, 5 agentes, 5 commands, 2 skills, `tasks/` | Ver solo la capa de contexto, aislada |
+| 3 | `preparado/swagger-y-tests` | 1 + 2 juntos | El estado completo antes de tocar la tarea |
+| 4 | `pruebas` | + fixtures de casos límite y versiones afinadas de los commands | Lo mismo, con las herramientas ya rodadas |
+| 5 | `solucion/endpoint` | + TASK-014 resuelta, con tests y contrato | La solución, para contrastar con la tuya |
 
-## First steps
-
-To get started with this project, follow these steps:
-
-1. Clone the repository.
-2. Install the dependencies for the frontend and backend:
-
-```sh
-cd frontend
-npm install
-
-cd ../backend
-npm install
 ```
-3. Build the backend server:
+antes ──► limpio ──► preparado/swagger-y-tests ──► pruebas ──► solucion/endpoint
+                 └─► preparado/contexto
 ```
+
+Para moverte entre ellas:
+
+```bash
+git switch limpio
+```
+
+Y para tener dos abiertas a la vez y compararlas de verdad, sin ir saltando:
+
+```bash
+git worktree add ../lti-limpio limpio
+git worktree add ../lti-solucion solucion/endpoint
+```
+
+---
+
+## Levantarlo
+
+Necesitas Docker y Node 18+.
+
+```bash
+# 1. Base de datos (usa el .env de la raíz: puerto 5435)
+docker compose up -d
+
+# 2. Dependencias y cliente de Prisma
 cd backend
-npm run build
-````
-4. Start the backend server:
-```
-cd backend
-npm start
-```
-5. In a new terminal window, build the frontend server:
-```
-cd frontend
-npm run build
-```
-6. Start the frontend server:
-```
-cd frontend
-npm start
-```
-
-The backend server will be running at http://localhost:3010 and the frontend will be available at http://localhost:3000.
-
-## Docker and PostgreSQL
-
-This project uses Docker to run a PostgreSQL database. Here's how to set it up:
-
-Install Docker on your machine if you haven't done so already. You can download it from here.
-Navigate to the root directory of the project in your terminal.
-Run the following command to start the Docker container:
-
-```
-docker-compose up -d
-```
-This will start a PostgreSQL database in a Docker container. The -d flag runs the container in detached mode, which means it runs in the background.
-
-To access the PostgreSQL database, you can use any PostgreSQL client with the following connection details:
-
-- Host: localhost
-- Port: 5432
-- User: postgres
-- Password: password
-- Database: mydatabase
-  
-Please replace User, Password, and Database with the actual username, password, and database name specified in your .env file.
-
-To stop the Docker container, run the following command:
-
-```
-docker-compose down
-```
-To generate the database using Prisma, follow these steps:
-
-1. Make sure that the .env file in the root directory of the backend contains the DATABASE_URL variable with the correct connection string to your PostgreSQL database. If it doesn’t work, try replacing the full URL directly in schema.prisma, in the url variable.
-
-2. Open a terminal and navigate to the backend directory where the schema.prisma and seed.ts files are located.
-
-3. Run the following commands to generate the Prisma structure, apply migrations to your database, and populate it with sample data:
-
-```
+npm install
 npx prisma generate
-npx prisma migrate dev
-ts-node seed.ts
+npx prisma migrate deploy
+
+# 3. Datos
+npm run seed            # datos base — OJO: no es idempotente, ver más abajo
+npm run seed:fixtures   # casos límite de TASK-014 — este sí es idempotente
+
+# 4. Arrancar
+npm run dev             # http://localhost:3010
 ```
 
-Once you have completed all the steps, you should be able to save new candidates, both via web and via API, view them in the database, and retrieve them using GET by ID.
+Documentación interactiva de la API en **http://localhost:3010/api-docs** (desde
+la rama `limpio` en adelante).
 
-```
-POST http://localhost:3010/candidates
-{
-    "firstName": "Albert",
-    "lastName": "Saelices",
-    "email": "albert.saelices@gmail.com",
-    "phone": "656874937",
-    "address": "Calle Sant Dalmir 2, 5ºB. Barcelona",
-    "educations": [
-        {
-            "institution": "UC3M",
-            "title": "Computer Science",
-            "startDate": "2006-12-31",
-            "endDate": "2010-12-26"
-        }
-    ],
-    "workExperiences": [
-        {
-            "company": "Coca Cola",
-            "position": "SWE",
-            "description": "",
-            "startDate": "2011-01-13",
-            "endDate": "2013-01-17"
-        }
-    ],
-    "cv": {
-        "filePath": "uploads/1715760936750-cv.pdf",
-        "fileType": "application/pdf"
-    }
-}
+Tests:
+
+```bash
+cd backend && npm test
 ```
 
---------------------------------------------
+---
 
-# LTI - Sistema de Seguimiento de Talento | ES
+## La capa de contexto
 
-Este proyecto es una aplicación full-stack con un frontend en React y un backend en Express usando Prisma como un ORM. El frontend se inicia con Create React App y el backend está escrito en TypeScript.
+Está en las ramas de la 2 en adelante. Es el material de la sesión.
 
-## Explicación de Directorios y Archivos
+### `CLAUDE.md`
 
-- `backend/`: Contiene el código del lado del servidor escrito en Node.js.
-  - `src/`: Contiene el código fuente para el backend.
-    - `index.ts`: El punto de entrada para el servidor backend.
-    - `application/`: Contiene la lógica de aplicación.
-    - `domain/`: Contiene la lógica de negocio.
-    - `infrastructure/`: Contiene código que se comunica con la base de datos.
-    - `presentation/`: Contiene código relacionado con la capa de presentación (como controladores).
-    - `routes/`: Contiene las definiciones de rutas para la API.
-    - `tests/`: Contiene archivos de prueba.
-  - `prisma/`: Contiene el archivo de esquema de Prisma para ORM.
-  - `tsconfig.json`: Archivo de configuración de TypeScript.
-- `frontend/`: Contiene el código del lado del cliente escrito en React.
-  - `src/`: Contiene el código fuente para el frontend.
-  - `public/`: Contiene archivos estáticos como el archivo HTML e imágenes.
-  - `build/`: Contiene la construcción lista para producción del frontend.
-- `.env`: Contiene las variables de entorno.
-- `docker-compose.yml`: Contiene la configuración de Docker Compose para gestionar los servicios de tu aplicación.
-- `README.md`: Este archivo, contiene información sobre el proyecto e instrucciones sobre cómo ejecutarlo.
+El fichero que lee el agente en cada sesión. No es documentación general: son
+las reglas que este proyecto no negocia (arquitectura en capas, nada de `any`,
+errores tipados, `select` anidado, transacciones, el contrato manda) y, sobre
+todo, **las trampas del repo** — las cosas que hacen perder una tarde y que no
+se deducen leyendo el código.
 
-## Estructura del Proyecto
+### Subagentes · `.claude/agents/`
 
-El proyecto está dividido en dos directorios principales: `frontend` y `backend`.
+| Agente | Cuándo |
+|---|---|
+| `product-manager` | El encargo llega vago. Aclara qué se pide de verdad y cuándo está terminado |
+| `arquitecto-backend` | Antes de decidir dónde va una pieza nueva o si algo no encaja en las capas |
+| `experto-bbdd` | Consultas Prisma, rendimiento, índices, transacciones, esquema |
+| `experto-tests` | Qué probar y en qué orden, sobre todo si el módulo no tiene tests |
+| `revisor-backend` | Después de escribir código, contra las reglas del proyecto |
 
-### Frontend
+Ninguno escribe código salvo cuando se le pide explícitamente: opinan, y la
+decisión la tomas tú.
 
-El frontend es una aplicación React y sus archivos principales están ubicados en el directorio `src`. El directorio `public` contiene activos estáticos y el directorio `build` contiene la construcción de producción de la aplicación.
+### Slash commands · `.claude/commands/`
 
-### Backend
-
-El backend es una aplicación Express escrita en TypeScript. El directorio `src` contiene el código fuente, dividido en varios subdirectorios:
-
-- `application`: Contiene la lógica de aplicación.
-- `domain`: Contiene los modelos de dominio.
-- `infrastructure`: Contiene código relacionado con la infraestructura.
-- `presentation`: Contiene código relacionado con la capa de presentación.
-- `routes`: Contiene las rutas de la aplicación.
-- `tests`: Contiene las pruebas de la aplicación.
-
-El directorio `prisma` contiene el esquema de Prisma.
-
-## Primeros Pasos
-
-Para comenzar con este proyecto, sigue estos pasos:
-
-1. Clona el repositorio.
-2. Instala las dependencias para el frontend y el backend:
-```sh
-cd frontend
-npm install
-
-cd ../backend
-npm install
-```
-3. Construye el servidor backend:
-```
-cd backend
-npm run build
-````
-4. Inicia el servidor backend:
-```
-cd backend
-npm start
-```
-5. En una nueva ventana de terminal, construye el servidor frontend:
-```
-cd frontend
-npm run build
-```
-6. Inicia el servidor frontend:
-```
-cd frontend
-npm start
-```
-
-El servidor backend estará corriendo en http://localhost:3010 y el frontend estará disponible en http://localhost:3000.
-
-## Docker y PostgreSQL
-
-Este proyecto usa Docker para ejecutar una base de datos PostgreSQL. Así es cómo ponerlo en marcha:
-
-Instala Docker en tu máquina si aún no lo has hecho. Puedes descargarlo desde aquí.
-Navega al directorio raíz del proyecto en tu terminal.
-Ejecuta el siguiente comando para iniciar el contenedor Docker:
-```
-docker-compose up -d
-```
-Esto iniciará una base de datos PostgreSQL en un contenedor Docker. La bandera -d corre el contenedor en modo separado, lo que significa que se ejecuta en segundo plano.
-
-Para acceder a la base de datos PostgreSQL, puedes usar cualquier cliente PostgreSQL con los siguientes detalles de conexión:
- - Host: localhost
- - Port: 5432
- - User: postgres
- - Password: password
- - Database: mydatabase
-
-Por favor, reemplaza User, Password y Database con el usuario, la contraseña y el nombre de la base de datos reales especificados en tu archivo .env.
-
-Para detener el contenedor Docker, ejecuta el siguiente comando:
-```
-docker-compose down
-```
-
-Para generar la base de datos utilizando Prisma, sigue estos pasos:
-
-1. Asegúrate de que el archivo `.env` en el directorio raíz del backend contenga la variable `DATABASE_URL` con la cadena de conexión correcta a tu base de datos PostgreSQL. Si no te funciona, prueba a reemplazar la URL completa directamente en `schema.prisma`, en la variable `url`.
-
-2. Abre una terminal y navega al directorio del backend donde se encuentra el archivo `schema.prisma` y `seed.ts`.
-
-3. Ejecuta los siguientes comandos para generar la estructura de prisma, las migraciones a tu base de datos y poblarla con datos de ejemplo:
-```
-npx prisma generate
-npx prisma migrate dev
-ts-node seed.ts
-```
-
-Una vez has dado todos los pasos, deberías poder guardar nuevos candidatos, tanto via web, como via API, verlos en la base de datos y obtenerlos mediante GET por id.
+Son el flujo de la sesión, y el orden importa:
 
 ```
-POST http://localhost:3010/candidates
-{
-    "firstName": "Albert",
-    "lastName": "Saelices",
-    "email": "albert.saelices@gmail.com",
-    "phone": "656874937",
-    "address": "Calle Sant Dalmir 2, 5ºB. Barcelona",
-    "educations": [
-        {
-            "institution": "UC3M",
-            "title": "Computer Science",
-            "startDate": "2006-12-31",
-            "endDate": "2010-12-26"
-        }
-    ],
-    "workExperiences": [
-        {
-            "company": "Coca Cola",
-            "position": "SWE",
-            "description": "",
-            "startDate": "2011-01-13",
-            "endDate": "2013-01-17"
-        }
-    ],
-    "cv": {
-        "filePath": "uploads/1715760936750-cv.pdf",
-        "fileType": "application/pdf"
-    }
-}
+/proyecto  →  /tarea  →  /contrato  →  /endpoint  →  /tests
 ```
 
+| Command | Qué hace |
+|---|---|
+| `/proyecto` | Analiza el repo y te lo explica como si entraras hoy. No toca código |
+| `/tarea` | Lee un ticket de `tasks/` y lo aterriza. Todavía sin contrato ni código |
+| `/contrato` | Escribe el OpenAPI del endpoint **antes** de implementarlo |
+| `/endpoint` | Implementa lo que ya declara `api-spec.yaml`, respetando las capas |
+| `/tests` | Prioriza por riesgo, no por cobertura, y justifica el orden antes de escribir |
+
+### Skills · `.claude/skills/`
+
+Se activan solas cuando toca, sin que las invoques:
+
+- **`contrato-api`** — mantiene `api-spec.yaml` sincronizado con el código y
+  avisa si divergen.
+- **`escrituras-seguras`** — detecta escrituras que pueden dejar datos a medias
+  y consultas N+1.
+
+---
+
+## El ejercicio · TASK-014
+
+En `tasks/TASK-014-candidatos-de-una-posicion.md`. Pide un endpoint para ver los
+candidatos de una oferta, con su fase y "cómo lo lleva" cada uno.
+
+El ticket está escrito **a propósito como llegan los tickets de verdad**: notas
+de una reunión, sin criterios de aceptación, y con dos preguntas colgando.
+
+- *"¿y si todavía no ha hecho ninguna entrevista?"* — «quedó sin resolver».
+- *"igual hace falta paginación"* — «no se decidió nada».
+
+Ahí está el ejercicio. Un agente al que le sueltas el ticket sin más se inventa
+una respuesta para las dos y no te dice que se la ha inventado. Ese es el
+momento de usar `/tarea` y `product-manager` antes de escribir una línea.
+
+### Cómo se resolvieron en `solucion/endpoint`
+
+**`averageScore: null`**, nunca `0`, cuando no hay nada que promediar —ni una
+sola entrevista puntuada—. Un `0` se leería en el Kanban como el peor candidato
+posible, y "todavía no lo sabemos" no es eso. Las entrevistas sin puntuar se
+descartan en vez de contar como cero. La media se redondea a un decimal.
+
+**Sin paginación.** Una oferta tiene decenas de candidaturas como mucho y el
+Kanban las pinta todas de golpe. Filtrar, ordenar y buscar son TASK-021, que el
+ticket declara fuera de alcance.
+
+Las dos decisiones están argumentadas dentro de `api-spec.yaml`, que es donde
+las va a leer quien consuma la API.
+
+### Verificarlo
+
+El seed principal **no sirve** para comprobar este endpoint: ningún candidato
+tiene más de una entrevista, así que una media bien calculada y una mal
+calculada dan el mismo número. Para eso está el otro:
+
+```bash
+cd backend && npm run seed:fixtures
+```
+
+Imprime los ids que ha creado y el valor esperado de cada caso —sin entrevistas,
+sin puntuar, una sola nota, media exacta, media periódica, mezcla— más una
+posición sin candidaturas. Luego:
+
+```bash
+curl http://localhost:3010/positions/<id>/candidates
+```
+
+---
+
+## Trampas del repo
+
+Las que cuestan una tarde si nadie te las cuenta. Están todas en `CLAUDE.md`,
+resumidas aquí:
+
+- **`npm run seed` no es idempotente.** Usa `create` a pelo contra columnas
+  `@unique`, así que una segunda ejecución revienta con `P2002`. Para volver a
+  sembrar hay que vaciar antes. `npm run seed:fixtures` sí es idempotente.
+- **La URL de conexión está escrita literal en `schema.prisma`.** Cambiar el
+  `.env` no basta: `dotenv` busca el fichero en el cwd (`backend/`) y está en la
+  raíz, así que hoy no lee nada.
+- **Por lo mismo, el puerto se pasa con `PORT`** desde el script de npm, no por
+  `.env`. Sin `PORT`, el 3010.
+- **`jest.config.js` lleva `watchman: false` y no es decorativo.** Si watchman
+  está instalado pero su daemon no responde, jest se cuelga minutos sin imprimir
+  nada y muere con un error sin manejar de `fb-watchman`.
+- **Swagger lee `api-spec.yaml` una sola vez al arrancar**, y `ts-node-dev` no
+  vigila los `.yaml`. Si editas el contrato, reinicia o seguirás viendo la
+  documentación vieja.
+
+---
+
+## Licencia
+
+MIT, heredada del proyecto original de LIDR Academy. Ver [`LICENSE.md`](LICENSE.md).
