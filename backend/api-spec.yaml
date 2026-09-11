@@ -152,6 +152,81 @@ paths:
           description: Bad request (invalid input data)
         '500':
           description: Internal server error
+  /positions/{id}/candidates:
+    get:
+      summary: List the candidates who applied to a position
+      description: >
+        Returns every application for the position, with the phase each candidate
+        is currently in and the average of their interview scores.
+
+        Ordered by application id ascending, so the list is stable between calls.
+        Not paginated: a position holds a few dozen applications at most, and the
+        Kanban view this feeds renders all of them at once.
+
+        Filtering, sorting and searching are out of scope (TASK-021).
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Position id
+      responses:
+        '200':
+          description: >
+            The position's candidates. An empty array means the position exists
+            but nobody has applied yet.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - applicationId
+                    - candidateId
+                    - fullName
+                    - currentInterviewStep
+                    - averageScore
+                  properties:
+                    applicationId:
+                      type: integer
+                      description: Id of the application, not of the candidate
+                      example: 12
+                    candidateId:
+                      type: integer
+                      example: 3
+                    fullName:
+                      type: string
+                      description: First and last name joined by a single space
+                      example: Jane Smith
+                    currentInterviewStep:
+                      type: string
+                      description: Name of the phase the application sits in
+                      example: Initial Screening
+                    averageScore:
+                      type: number
+                      format: float
+                      nullable: true
+                      description: >
+                        Average of the candidate's interview scores for this
+                        application, rounded to one decimal.
+
+                        Null when there is nothing to average: either the
+                        candidate has had no interviews yet, or none of the
+                        interviews have been scored. Null means "no data", which
+                        is not the same as a score of 0 — a 0 would read as the
+                        worst possible candidate on the Kanban board.
+
+                        Unscored interviews are skipped, they do not count as 0.
+                      example: 4.7
+        '400':
+          description: The id is not a positive integer
+        '404':
+          description: No position with that id
+        '500':
+          description: Internal server error
   /upload:
     post:
       summary: Upload a file

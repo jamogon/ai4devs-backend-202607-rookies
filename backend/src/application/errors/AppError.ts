@@ -23,3 +23,12 @@ export class NotFoundError extends AppError {
         Object.setPrototypeOf(this, NotFoundError.prototype);
     }
 }
+
+/** La petición viene mal formada: el cliente tiene que corregirla y reintentar. */
+export class ValidationError extends AppError {
+    constructor(message: string) {
+        super(message, 400);
+        this.name = 'ValidationError';
+        Object.setPrototypeOf(this, ValidationError.prototype);
+    }
+}

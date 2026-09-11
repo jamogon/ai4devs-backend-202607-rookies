@@ -83,5 +83,50 @@ export class Position {
         if (!data) return null;
         return new Position(data);
     }
+
+    /**
+     * La posición con sus candidaturas, la fase en la que está cada una y las
+     * notas de sus entrevistas.
+     *
+     * Un único `select` anidado: traerse las candidaturas y luego pedir las
+     * entrevistas de cada una sería un bucle con `await` dentro y N+1 consultas.
+     *
+     * Ordenado por id de candidatura para que dos llamadas seguidas devuelvan
+     * lo mismo; sin `orderBy` explícito Postgres no garantiza ningún orden.
+     *
+     * Devuelve `null` si la posición no existe, que no es lo mismo que una
+     * posición sin candidaturas: esa devuelve `applications: []`.
+     */
+    static async findWithApplications(id: number): Promise<PositionWithApplications | null> {
+        return await prisma.position.findUnique({
+            where: { id: id },
+            select: {
+                id: true,
+                applications: {
+                    orderBy: { id: 'asc' },
+                    select: {
+                        id: true,
+                        candidateId: true,
+                        candidate: { select: { firstName: true, lastName: true } },
+                        interviewStep: { select: { name: true } },
+                        interviews: { select: { score: true } },
+                    },
+                },
+            },
+        });
+    }
+}
+
+export interface ApplicationWithInterviews {
+    id: number;
+    candidateId: number;
+    candidate: { firstName: string; lastName: string };
+    interviewStep: { name: string };
+    interviews: { score: number | null }[];
+}
+
+export interface PositionWithApplications {
+    id: number;
+    applications: ApplicationWithInterviews[];
 }
 

@@ -1,4 +1,4 @@
-import { AppError, NotFoundError } from './AppError';
+import { AppError, NotFoundError, ValidationError } from './AppError';
 
 describe('AppError', () => {
     it('expone el statusCode con el que se construye', () => {
@@ -52,5 +52,33 @@ describe('NotFoundError', () => {
         const error = new NotFoundError('Position not found');
 
         expect(error.name).toBe('NotFoundError');
+    });
+});
+
+describe('ValidationError', () => {
+    it('responde siempre con un 400', () => {
+        const error = new ValidationError('El id debe ser un entero positivo');
+
+        expect(error.statusCode).toBe(400);
+    });
+
+    it('se reconoce tanto como ValidationError como como AppError', () => {
+        const error = new ValidationError('El id debe ser un entero positivo');
+
+        expect(error instanceof ValidationError).toBe(true);
+        expect(error instanceof AppError).toBe(true);
+        expect(error instanceof Error).toBe(true);
+    });
+
+    it('no se confunde con un NotFoundError', () => {
+        const error = new ValidationError('El id debe ser un entero positivo');
+
+        expect(error instanceof NotFoundError).toBe(false);
+    });
+
+    it('se distingue de su clase base en los logs', () => {
+        const error = new ValidationError('El id debe ser un entero positivo');
+
+        expect(error.name).toBe('ValidationError');
     });
 });
